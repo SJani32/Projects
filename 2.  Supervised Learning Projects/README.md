@@ -16,3 +16,20 @@ Supervised Machine Learning Projects:
        * KNN Classifier Model with Hyperparamtere Tuning using GridSearchCV
        * SVM Classifier Model
        * SVM classifier Model with Hpyerparameter Tuning using GridSearchCV
+    
+  3. Customer Churn Prediction
+     - This project is intended to identify the customer (Telecom company) who shall churn based on 19 features.
+     - This project is bifurcated in 2 parts:
+        1. Build XGBoost model to classify the customers and later on enhance the performance of the model.
+        2. Use various models to perfom classification task and identify the best performing model amongst them. The models build in this section are:
+         > Logistic Regression
+         > Gaussina Naive Bayes Classifier
+         > K-Nearest Neighbor Classifier
+         > Support Vector Classifier
+         > Decision Tree Classifier
+         > Bagging Classifier
+         > AdaBoost Classifier
+         > Gradient Boost Classifier
+         > Random Forest Classifier
+         > XGBoost Classifier
+         > LightGBM Classifier
