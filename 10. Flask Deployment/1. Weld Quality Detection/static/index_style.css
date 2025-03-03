@@ -1,0 +1,97 @@
+.title {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(to right, #1e3c72, #2a5298);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+}
+.content{
+    display: flex;
+    height: 5px;
+    justify-content: center; /*Horizontal shift*/
+    align-items: start; /*Vertical shift*/
+    flex-direction: column;
+    margin-top: 10px;
+    /* margin-bottom: 0px; */
+}
+
+.content-area {
+    display: grid;
+    /* grid-template-rows: 60px; */
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.upload-section, .result-section {
+    position: relative;
+    width: 97%;
+    height: 600px;
+    border: 2px solid black;
+    border-radius: 15px;
+    padding: 5px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.up-header, .res-header {
+    width: 100%;
+    height: 25px;
+    background: linear-gradient(to top, #d3d3d3, #a9a9a9); /*linear-gradient(to right, #1e3c72, #2a5298);*/
+    border: 2px solid #000; /* Adding border to the background */
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-size: 20px;
+    text-align: center;
+}
+
+.up-img{
+    position: relative;
+    width: 100%;
+    height: 80px;
+    border: 2px solid black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 1px;
+}
+
+.image-preview, .detect-preview{
+    width: 100%;
+    height: 500px;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 0px;
+}
+
+.res-img{
+    position: relative;
+    width: 100%;
+    height: 80px;
+    border: 2px solid black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 1px;
+}
