@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App for Welding Quality Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index_style.css') }}">
+</head>
+<body>
+
+    <div class="container" >
+        <main>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-title" id="dashboard-title">
+                <div class="title"><h1>Welding Quality Detection</h1></div>
+                <div class="content"><p>Upload the Image/Video of the weld to check it's quality</p></div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+
+                <!-- Upload Section -->
+                <div class="upload-section" id="upload-section">
+                    
+                    <!-- Upload Header Section -->
+                    <div class="up-header" id="up-header">
+                        <h3>Upload Section</h3>
+                    </div>
+
+                    <!-- Upload Image Section -->
+                    <div class="up-img" id="up-img">
+                            <p>Upload the Image/Video File here</p>
+                            <input type="file" id="fileinput" name='test_file' onchange="displayFile(this)">
+                    </div>
+
+                    <!-- Upload Image Preview Section -->
+                    <div class="image-preview" id="image-preview">
+                        <img class= "uploaded-image" id="uploaded-image" src="#" alt="Uploaded File will be displayed here." style="display: block; width: 440px; height: 440px; text-align: center; align-items: center; justify-content: center;">
+                    </div>
+                </div>
+                    
+                    <!-- Result Section -->
+                <div class="result-section" id="result-section">
+                    <div class="res-header" id="res-header">
+                        <h3 style="text-align: center; align-items: start; justify-content: center;">Results for Uploaded Image</h3>
+                    </div>
+                    <div class="res-img" id="res-img">
+                        <p>The Detected Welding Quality for the uploaded file can be viewed here.</p>
+                        <form id="uploadForm" action='/predict' method="post" enctype="multipart/form-data">
+                            <input type="hidden" id="hiddenFileInput" name="test_file" required> <button type="submit">Predict Welding Quality</button>
+                        </form>
+                    </div>
+
+                    <!--Detected Image Preview Section -->
+                    <div class="detect-preview" id="detect-preview">
+                        <img class="det-image" id="det-image" src="#" alt="File with predictions will be displayed here." style="display: block; width: 440px; height: 440px; text-align: center; align-items: center; justify-content: center;">
+                        <video id="det-video" controls style="display: none; width: 440px; height: 440px; text-align: center; align-items: center; justify-content: center;">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="prediction-results"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Function to Display the image//video on the page 
+        function displayFile(input) {
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.getElementById('uploaded-image');
+                    var uploadedvideo = document.createElement('video');
+                    uploadedvideo.controls = true;
+                    uploadedvideo.width = 440;
+                    uploadedvideo.height = 440;
+                    
+                    if (file.type.startsWith('image/')) {
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                        if (img.nextSibling) {
+                            img.parentNode.removeChild(img.nextSibling);
+                        }
+                        // Removing any existing preview
+                        var existingvideo = img.parentNode.querySelector('video')
+                        if (existingvideo) {
+                            existingvideo.remove();
+                        }
+
+                    } else if (file.type.startsWith('video/')) {
+                        uploadedvideo.src = e.target.result;
+                        img.style.display = 'none';
+                        if (img.nextSibling) {
+                            img.parentNode.removeChild(img.nextSibling);
+                        }
+                        // Removing any existing preview
+                        var existingvideo = img.parentNode.querySelector('video')
+                        if (existingvideo) {
+                            existingvideo.remove();
+                        }
+
+                        img.parentNode.appendChild(uploadedvideo);
+                    }
+                }
+                reader.readAsDataURL(file);
+
+                const hiddenFileInput = document.getElementById('hiddenFileInput');
+                hiddenFileInput.value = file.name;
+            }
+        }
+
+        // Script to handle the form submission and image upload on 'submit'
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get the file from the input and check if it exists
+            const file = document.getElementById('fileinput').files[0];
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            // Create FormData and append file
+            const formData = new FormData();
+            formData.append('test_file', file);
+            
+            // Show loading state
+            const predResults = document.getElementById('prediction-results');
+            const detImage = document.getElementById('det-image');
+            const detVideo = document.getElementById('det-video');
+
+            predResults.textContent = 'Processing...';
+            detImage.style.display = 'none';
+            detVideo.style.display = 'none';
+
+            //Claering previous sources
+            detImage.src = '';
+            detVideo.src = '';
+            
+            // Display a rotating timer
+            const timer = document.createElement('div');
+            timer.classList.add('rotating-timer');
+            timer.innerHTML = '<div class="spinner"></div>';
+            document.getElementById('prediction-results').appendChild(timer);
+            
+            // CSS for rotating timer
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .rotating-timer {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
+                }
+                .spinner {
+                    border: 10px solid #f3f3f3;
+                    border-top: 10px solid #3498db;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 2s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Send request to backend
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+                console.log('Received Response:',data);
+
+                if (data.Error) {
+                    throw new Error('Upload Error:', data.Error);
+                }
+
+                if (data.image) {
+                    detImage.src = data.image + '?' + new Date().getTime(); // To Prevent Caching
+                    detImage.style.display = 'block';
+                    detVideo.style.display = 'none';
+                    predResults.textContent = ' ';
+                
+                    detImage.onload = function() {
+                        console.log('Image Loaded Successfully');
+                        
+                        // Remove the timer
+                        document.getElementById('prediction-results').removeChild(timer);
+                        predResults.textContent = ' ';
+                    };
+
+                    detImage.onerror = function() {
+                        console.error('Error Loading Image');
+                        // Remove the timer
+                        document.getElementById('prediction-results').removeChild(timer);
+                    };
+                } else if (data.video) {
+                    console.log('Processing the Video');
+                    
+                    // Handle video prediction
+                    detImage.style.display = 'none';
+                    detVideo.style.display = 'block';
+
+                    // Add timestamp and proper MIME type
+                    const videoSource = encodeURI(data.video) + '?' + new Date().getTime();
+                    console.log('Video Source:', videoSource);
+
+                    // Reset video element
+                    detVideo.pause();
+                    detVideo.removeAttribute('src');
+                    detVideo.removeAttribute('type');
+                    detVideo.load();
+
+                    // Set new source with proper MIME type
+                    detVideo.src = videoSource;
+                    detVideo.type = 'video/mp4';
+
+                    // Add Event listner
+                    detVideo.addEventListener('loadstart', () => console.log('Loading Video'));
+                    detVideo.addEventListener('loadmetadata', () => console.log('Video Metadata Loaded'));
+                    detVideo.addEventListener('loadeddata', () => console.log('Video data loaded'));
+                    detVideo.addEventListener('error', (e) => console.error('Video Error', e));
+
+                    // Wait for Video to be loaded before playing
+                    detVideo.onloadeddata = function() {
+                        console.log('Video Loaded Successfully');
+                        predResults.textContent = ' ';
+                        detVideo.play().catch(error => {
+                            console.error('Error Playing Video:', error);
+                            // Remove the timer
+                            document.getElementById('prediction-results').removeChild(timer);
+                            predResults.textContent = ' ';
+                        });
+                    };
+
+                    detVideo.onerror = function() {
+                        const error = detVideo.error;
+                        console.error('Video Loading Error', error);
+                        predResults.textContent = ' ';
+
+                        if (error) {
+                            console.error('Video Error Code:', error.code);
+                            console.error('Video Error Message:', error.message);
+                        }
+                    };
+
+                    // Force Video Reload
+                    detVideo.load();
+                
+                // Remove the timer
+                document.getElementById('prediction-results').removeChild(timer);
+                }
+            })
+            .catch(error =>{
+                console.error('Error:', error);
+                predResults.textContent = 'Error: ' + error.message;
+            });
+        });
+
+        // Optional: Add file input change handler to update hidden input
+        document.getElementById('fileinput').addEventListener('change', function (e){
+            const file = e.target.files[0];
+            if (file) {
+                const hiddenInput = document.getElementById('hiddenFileInput');
+                if (hiddenInput) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    hiddenInput.files = dataTransfer.files;
+                }
+            }
+        });
+
+        // Add window error handler for debugging
+        window.onerror = function(message, source, lineon, clono, error) {
+            console.error('Global Error:', {message, source, lineon, colno, error});
+            return false;
+        };
+    </script>
+</body>
+</html>
